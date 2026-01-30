@@ -1,7 +1,6 @@
 import datetime
 import os
 
-
 class Logger:
     def __init__(self, log_save_path="log"):
         self.now = datetime.datetime.now()
@@ -10,72 +9,35 @@ class Logger:
         self.save_log = True
         self.save_path = log_save_path
 
-    def custom(self, text):
+    def custom(self, log_type, text, color="\033[0m"):
         self.now = datetime.datetime.now()
-        self.log.append(f"{text}")
-        print(self.log[len(self.log) - 1])
+        log_message = f"{self.now.strftime('%Y-%m-%d %H:%M:%S')} {log_type} {text}"
+        self.log.append(log_message)
+
+        if self.log_print:
+            print(f"{self.now.strftime('%Y-%m-%d %H:%M:%S')} {color}{log_type}\033[0m {text}")
 
     def debug(self, text):
-        self.now = datetime.datetime.now()
-        self.log.append(f"{self.now.strftime('%Y-%m-%d %H:%M:%S')} DEBUG {text}")
-        if self.log_print:
-            print(
-                f"\033[95m{self.now.strftime('%Y-%m-%d %H:%M:%S')} \033[36mDEBUG\033[0m {text}"
-            )
+        self.custom("DEBUG", text, "\033[36m")
 
     def info(self, text):
-        self.now = datetime.datetime.now()
-        self.log.append(f"{self.now.strftime('%Y-%m-%d %H:%M:%S')} INFO {text}")
-        if self.log_print:
-            print(
-                f"\033[95m{self.now.strftime('%Y-%m-%d %H:%M:%S')} \033[94mINFO\033[0m \033[0m{text}"
-            )
+        self.custom("INFO", text, "\033[94m")
 
     def warning(self, text):
-        self.now = datetime.datetime.now()
-        self.log.append(f"{self.now.strftime('%Y-%m-%d %H:%M:%S')} WARNING {text}")
-        if self.log_print:
-            print(
-              f"\033[95m{self.now.strftime('%Y-%m-%d %H:%M:%S')} \033[33mWARNING\033[0m \033[0m{text}"
-            )
+        self.custom("WARNING", text, "\033[33m")
 
     def error(self, text):
-        self.now = datetime.datetime.now()
-        self.log.append(f"{self.now.strftime('%Y-%m-%d %H:%M:%S')} ERROR {text}")
-        if self.log_print:
-            print(
-                f"\033[95m{self.now.strftime('%Y-%m-%d %H:%M:%S')} \033[91mERROR\033[0m \033[0m{text}"
-            )
+        self.custom("ERROR", text, "\033[91m")
 
     def critical(self, text):
-        self.now = datetime.datetime.now()
-        self.log.append(f"{self.now.strftime('%Y-%m-%d %H:%M:%S')} CRITICAL {text}")
-        if self.log_print:
-            print(
-                f"\033[95m{self.now.strftime('%Y-%m-%d %H:%M:%S')} \033[31mCRITICAL\033[0m \033[0m{text}"
-            )
+        self.custom("CRITICAL", text, "\033[31m")
 
     def save(self):
         self.now = datetime.datetime.now()
-        os.chdir(os.getcwd())
-        try:
-            os.chdir(os.path.realpath(self.save_path))
-            f = open(
-                f"{self.now.strftime('%Y-%m-%d %H-%M-%S')}.log", "w"
-            )
-            for i in self.log:
-                f.write(f"{i}\n")
-            f.close()
-        except:
-            os.mkdir(os.path.realpath("log"))
-            os.chdir(os.path.realpath("log"))
-            f = open(
-                f"{self.now.strftime('%Y-%m-%d %H-%M-%S')}.log", "w"
-            )
-            for i in self.log:
-                f.write(f"{i}\n")
-            f.close()
-        os.chdir(os.getcwd())
+        os.makedirs(self.save_path, exist_ok=True)
+        file_path = os.path.join(self.save_path, f"{self.now.strftime('%Y-%m-%d %H-%M-%S')}.log")
+        with open(file_path, "w") as f:
+            f.write("\n".join(self.log))
 
     def __del__(self, name):
         if self.save_log:
